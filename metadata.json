@@ -1,0 +1,8 @@
+{
+  "name": "TranscribeAR",
+  "description": "Zoom - Voice Intelligence System v2. An AI-powered voice transcription engine purpose-built for the Egyptian and Arab market.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": []
+}
