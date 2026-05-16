@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { GoogleGenAI } from '@google/genai';
 import { 
@@ -21,6 +21,101 @@ import {
 } from 'lucide-react';
 
 export default function App() {
+  const [uiLang, setUiLang] = useState<'ar' | 'en'>('ar');
+
+  useEffect(() => {
+    document.documentElement.dir = uiLang === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = uiLang;
+  }, [uiLang]);
+
+  const t = {
+    ar: {
+      appName: 'TranscribeAR',
+      outputMode: 'وضع المخرجات',
+      overview: 'عام',
+      analysis: 'تحليل',
+      transcript: 'تفريغ',
+      quickActions: 'إجراءات سريعة',
+      improve: 'تحسين',
+      translate: 'ترجمة',
+      export: 'تصدير',
+      post: 'نشر',
+      recentHistory: 'السجل الحديث',
+      connected: 'متصل',
+      recording: 'جاري التسجيل...',
+      processing: 'جاري معالجة الصوت...',
+      clickToRecord: 'اضغط للتسجيل المباشر',
+      clickToStop: 'انقر للإيقاف والبدء في المعالجة',
+      analyzingText: 'جاري تحليل الصوت وتفريغه بذكاء...',
+      youtubeTitle: 'رابط يوتيوب',
+      youtubeDesc: 'الصق رابط الفيديو وسنقوم باستخراج النص لك.',
+      youtubeInputTitle: 'أدخل رابط فيديو يوتيوب',
+      youtubePlaceholder: 'https://www.youtube.com/watch?v=...',
+      transcribeBtn: 'تفريغ',
+      cancelBtn: 'إلغاء',
+      uploadTitle: 'ارفع ملف 📁',
+      uploadDesc: 'يدعم ملفات WAV, MP3, و MP4 حتى 500 ميجابايت.',
+      micTitle: 'سجل مباشرة 🎤',
+      micDesc: 'ابدأ تحويل صوتك إلى نص فوراً وبدقة عالية.',
+      duration: 'المدة',
+      words: 'الكلمات',
+      accuracy: 'الدقة',
+      copyText: 'نسخ النص',
+      extractedText: 'النص المستخرج',
+      chatPlaceholder: 'اطلب من الذكاء الاصطناعي تحسين النص أو تلخيصه ...',
+      send: 'إرسال',
+      uploadBtn: 'رفع ملف',
+      errorLink: 'حدث خطأ أثناء التفريغ. تأكد من صحة الرابط أو جرب رابطاً آخر.',
+      errorAudio: 'حدث خطأ أثناء التفريغ. تأكد من إعدادات الميكروفون أو جودة الصوت وحاول مجدداً.',
+      dialect: 'عامية',
+      fusha: 'فصحى',
+      english: 'EN'
+    },
+    en: {
+      appName: 'TranscribeAR',
+      outputMode: 'OUTPUT MODE',
+      overview: 'Overview',
+      analysis: 'Analysis',
+      transcript: 'Transcript',
+      quickActions: 'QUICK ACTIONS',
+      improve: 'Improve',
+      translate: 'Translate',
+      export: 'Export',
+      post: 'Post',
+      recentHistory: 'RECENT HISTORY',
+      connected: 'Connected',
+      recording: 'Recording...',
+      processing: 'Processing Audio...',
+      clickToRecord: 'Click to Start Recording',
+      clickToStop: 'Click to stop and begin processing',
+      analyzingText: 'Smartly analyzing and transcribing audio...',
+      youtubeTitle: 'YouTube URL',
+      youtubeDesc: 'Paste the video link and we will extract the text.',
+      youtubeInputTitle: 'Enter YouTube Video URL',
+      youtubePlaceholder: 'https://www.youtube.com/watch?v=...',
+      transcribeBtn: 'Transcribe',
+      cancelBtn: 'Cancel',
+      uploadTitle: 'Upload File 📁',
+      uploadDesc: 'Supports WAV, MP3, and MP4 up to 500MB.',
+      micTitle: 'Live Record 🎤',
+      micDesc: 'Convert your voice to text instantly and accurately.',
+      duration: 'Duration',
+      words: 'Words',
+      accuracy: 'Accuracy',
+      copyText: 'Copy Text',
+      extractedText: 'Extracted Text',
+      chatPlaceholder: 'Ask AI to improve or summarize the text...',
+      send: 'Send',
+      uploadBtn: 'Upload',
+      errorLink: 'Error transversing. Check URL or try another.',
+      errorAudio: 'Error transcribing. Check mic settings or audio quality and try again.',
+      dialect: 'Dialect',
+      fusha: 'Fusha',
+      english: 'EN'
+    }
+  };
+  const l = t[uiLang];
+
   const [outputMode, setOutputMode] = useState('A');
   const [isRecording, setIsRecording] = useState(false);
   const [hasTranscript, setHasTranscript] = useState(false);
@@ -173,9 +268,15 @@ export default function App() {
       const ai = new GoogleGenAI({ apiKey });
       
       let prompt = '';
-      if (action === 'improve') prompt = "حسّن صياغة هذا النص وقم بتصحيح الأخطاء الإملائية والنحوية دون تغيير المعنى:";
-      if (action === 'translate') prompt = "Translate the following text to English (if Arabic) or Arabic (if English):";
-      if (action === 'post') prompt = "حول هذا النص إلى منشور جذاب لمنصات التواصل الاجتماعي:";
+      if (uiLang === 'ar') {
+        if (action === 'improve') prompt = "حسّن صياغة هذا النص وقم بتصحيح الأخطاء الإملائية والنحوية دون تغيير المعنى:";
+        if (action === 'translate') prompt = "Translate the following text to English (if Arabic) or Arabic (if English):";
+        if (action === 'post') prompt = "حول هذا النص إلى منشور جذاب لمنصات التواصل الاجتماعي:";
+      } else {
+        if (action === 'improve') prompt = "Improve the phrasing of this text and correct spelling and grammar errors without changing the meaning:";
+        if (action === 'translate') prompt = "Translate the following text to English (if Arabic) or Arabic (if English):";
+        if (action === 'post') prompt = "Turn this text into an engaging social media post:";
+      }
       
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
@@ -200,9 +301,13 @@ export default function App() {
       if (!apiKey) throw new Error("API Key logic is missing");
       const ai = new GoogleGenAI({ apiKey });
       
+      const sysPrompt = uiLang === 'ar' 
+        ? `أنت مساعد ذكي للنصوص. النص الأصلي هو:\n${transcriptText}\n\nطلب المستخدم: ${currentMessage}\n\nقم بتنفيذ طلب المستخدم على النص الأصلي.`
+        : `You are a smart text assistant. The original text is:\n${transcriptText}\n\nUser request: ${currentMessage}\n\nExecute the user request based on the original text.`;
+      
       const response = await ai.models.generateContent({
         model: 'gemini-3.1-pro-preview',
-        contents: `أنت مساعد ذكي للنصوص. النص الأصلي هو:\n${transcriptText}\n\nطلب المستخدم: ${currentMessage}\n\nقم بتنفيذ طلب المستخدم على النص الأصلي.`
+        contents: sysPrompt
       });
 
       setTranscriptText(response.text || transcriptText);
@@ -262,7 +367,7 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
       setHasTranscript(true);
     } catch (err) {
       console.error("Transcription error:", err);
-      setTranscriptText("حدث خطأ أثناء التفريغ. تأكد من صحة الرابط أو جرب رابطاً آخر.");
+      setTranscriptText(l.errorLink);
       setHasTranscript(true);
     } finally {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -302,7 +407,7 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
       setHasTranscript(true);
     } catch (err) {
       console.error("Transcription error:", err);
-      setTranscriptText("حدث خطأ أثناء التفريغ. تأكد من إعدادات الميكروفون أو جودة الصوت وحاول مجدداً.");
+      setTranscriptText(l.errorAudio);
       setHasTranscript(true);
     } finally {
       setIsProcessing(false);
@@ -312,51 +417,51 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
   return (
     <div className="flex h-screen w-full bg-[#0b1120] text-slate-100 overflow-hidden font-sans">
       
-      {/* Sidebar (Right side in RTL) */}
-      <aside className="w-[320px] shrink-0 border-l border-slate-800/60 bg-[#0f172a]/40 flex flex-col p-6 overflow-y-auto">
+      {/* Sidebar */}
+      <aside className="w-[320px] shrink-0 border-e border-slate-800/60 bg-[#0f172a]/40 flex flex-col p-6 overflow-y-auto">
         <div className="text-2xl font-bold mb-10 tracking-tight text-white flex items-center gap-2">
-          TranscribeAR
+          {l.appName}
         </div>
 
         <div className="mb-8">
-          <div className="text-xs font-semibold text-slate-500 tracking-widest mb-4 uppercase">Output Mode</div>
+          <div className="text-xs font-semibold text-slate-500 tracking-widest mb-4 uppercase">{l.outputMode}</div>
           <div className="space-y-2">
             <ModeButton 
               active={outputMode === 'A'} 
               onClick={() => setOutputMode('A')}
               letter="A"
               icon={<LayoutGrid className="w-4 h-4" />}
-              label="Overview"
+              label={l.overview}
             />
             <ModeButton 
               active={outputMode === 'B'} 
               onClick={() => setOutputMode('B')}
               letter="B"
               icon={<BarChart2 className="w-4 h-4" />}
-              label="Analysis"
+              label={l.analysis}
             />
             <ModeButton 
               active={outputMode === 'C'} 
               onClick={() => setOutputMode('C')}
               letter="C"
               icon={<FileText className="w-4 h-4" />}
-              label="Transcript"
+              label={l.transcript}
             />
           </div>
         </div>
 
         <div className="mb-8">
-          <div className="text-xs font-semibold text-slate-500 tracking-widest mb-4 uppercase">Quick Actions</div>
+          <div className="text-xs font-semibold text-slate-500 tracking-widest mb-4 uppercase">{l.quickActions}</div>
           <div className="grid grid-cols-2 gap-3">
-            <ActionButton onClick={() => performAction('improve')} icon={<Sparkles className="w-4 h-4" />} label="Improve" />
-            <ActionButton onClick={() => performAction('translate')} icon={<Languages className="w-4 h-4" />} label="Translate" />
-            <ActionButton onClick={() => performAction('export')} icon={<Download className="w-4 h-4" />} label="Export" />
-            <ActionButton onClick={() => performAction('post')} icon={<Share className="w-4 h-4" />} label="Post" />
+            <ActionButton onClick={() => performAction('improve')} icon={<Sparkles className="w-4 h-4" />} label={l.improve} />
+            <ActionButton onClick={() => performAction('translate')} icon={<Languages className="w-4 h-4" />} label={l.translate} />
+            <ActionButton onClick={() => performAction('export')} icon={<Download className="w-4 h-4" />} label={l.export} />
+            <ActionButton onClick={() => performAction('post')} icon={<Share className="w-4 h-4" />} label={l.post} />
           </div>
         </div>
 
         <div>
-          <div className="text-xs font-semibold text-slate-500 tracking-widest mb-4 uppercase">Recent History</div>
+          <div className="text-xs font-semibold text-slate-500 tracking-widest mb-4 uppercase">{l.recentHistory}</div>
           {/* History items can go here */}
         </div>
       </aside>
@@ -373,31 +478,41 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
               <Globe className="w-5 h-5 text-slate-400" />
               <div className="flex items-center gap-2 bg-emerald-500/10 text-emerald-400 px-3 py-1.5 rounded-full text-sm font-medium border border-emerald-500/20">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                متصل
+                {l.connected}
               </div>
             </div>
           </div>
           
-          {/* Language Toggle */}
-          <div className="flex items-center bg-slate-800/50 p-1 rounded-full border border-slate-700/50">
+          <div className="flex items-center gap-4">
+            {/* UI Language Toggle */}
+            <button 
+              onClick={() => setUiLang(uiLang === 'ar' ? 'en' : 'ar')}
+              className="px-3 py-1.5 text-sm font-semibold border border-slate-700/80 rounded-full bg-slate-800/30 hover:bg-slate-700 text-slate-300 transition-colors"
+            >
+              {uiLang === 'ar' ? 'English' : 'عربي'}
+            </button>
+            <div className="w-px h-6 bg-slate-800" />
+            {/* Input Language Toggle */}
+            <div className="flex items-center bg-slate-800/50 p-1 rounded-full border border-slate-700/50">
             <button 
               onClick={() => setSelectedLanguage('عامية')}
               className={`px-4 py-1.5 text-sm font-medium transition-colors ${selectedLanguage === 'عامية' ? 'bg-blue-500 text-white rounded-full shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
             >
-              عامية
+              {l.dialect}
             </button>
             <button 
               onClick={() => setSelectedLanguage('فصحى')}
               className={`px-4 py-1.5 text-sm font-medium transition-colors ${selectedLanguage === 'فصحى' ? 'bg-blue-500 text-white rounded-full shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
             >
-              فصحى
+              {l.fusha}
             </button>
             <button 
               onClick={() => setSelectedLanguage('EN')}
               className={`px-4 py-1.5 text-sm font-medium transition-colors ${selectedLanguage === 'EN' ? 'bg-blue-500 text-white rounded-full shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
             >
-              EN
+              {l.english}
             </button>
+            </div>
           </div>
         </header>
 
@@ -429,7 +544,7 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                     <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse" />
                     <span className="font-mono font-semibold tracking-widest text-lg" dir="ltr">{formatTime(recordingSeconds)}</span>
                   </div>
-                  <h2 className="text-[15px] font-medium text-slate-400">انقر للإيقاف والبدء في المعالجة</h2>
+                  <h2 className="text-[15px] font-medium text-slate-400">{l.clickToStop}</h2>
                 </div>
               ) : isProcessing ? (
                 <div className="flex flex-col items-center mb-6 relative z-10">
@@ -437,11 +552,11 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span className="font-mono font-semibold tracking-widest text-lg" dir="ltr">{formatTime(recordingSeconds)}</span>
                   </div>
-                  <h2 className="text-[15px] font-medium text-slate-400">جاري تحليل الصوت وتفريغه بذكاء...</h2>
+                  <h2 className="text-[15px] font-medium text-slate-400">{l.analyzingText}</h2>
                 </div>
               ) : (
                 <h2 className={`${hasTranscript ? 'text-[15px] text-slate-400' : 'text-xl text-slate-200'} font-medium mb-6 relative z-10`}>
-                  اضغط للتسجيل المباشر
+                  {l.clickToRecord}
                 </h2>
               )}
 
@@ -472,14 +587,14 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
             {activeInputType === 'youtube' ? (
               <div className="border border-indigo-500/50 bg-indigo-500/5 rounded-2xl p-8 relative flex flex-col items-center">
                 <LinkIcon className="w-10 h-10 text-indigo-400 mb-4" />
-                <h3 className="text-xl font-bold text-slate-200 mb-6">أدخل رابط فيديو يوتيوب</h3>
+                <h3 className="text-xl font-bold text-slate-200 mb-6">{l.youtubeInputTitle}</h3>
                 <div className="flex w-full max-w-2xl gap-3">
                   <input
                     type="url"
                     dir="ltr"
                     value={youtubeUrl}
                     onChange={(e) => setYoutubeUrl(e.target.value)}
-                    placeholder="https://www.youtube.com/watch?v=..."
+                    placeholder={l.youtubePlaceholder}
                     className="flex-1 h-14 bg-slate-900/80 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 text-slate-200 placeholder:text-slate-500 outline-none transition-all text-left"
                     autoFocus
                     onKeyDown={(e) => { 
@@ -491,14 +606,14 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                     disabled={!youtubeUrl || isProcessing}
                     className="h-14 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:hover:bg-indigo-600 transition-colors text-white font-medium shadow-lg shadow-indigo-500/20"
                   >
-                    تفريغ
+                    {l.transcribeBtn}
                   </button>
                 </div>
                 <button 
                   onClick={() => setActiveInputType('none')}
                   className="mt-6 text-sm text-slate-400 hover:text-white transition-colors"
                 >
-                  إلغاء
+                  {l.cancelBtn}
                 </button>
               </div>
             ) : hasTranscript ? (
@@ -506,22 +621,22 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                 {/* Stats row for Transcript mode */}
                 <div className="grid grid-cols-3 gap-6">
                   <div className="border border-slate-800 bg-slate-900/30 rounded-2xl p-6 text-center">
-                    <div className="text-sm font-medium text-slate-400 mb-2">المدة</div>
+                    <div className="text-sm font-medium text-slate-400 mb-2">{l.duration}</div>
                     <div className="text-3xl font-bold text-white font-mono">{formatTime(recordingSeconds)}</div>
                   </div>
                   <div className="border border-slate-800 bg-slate-900/30 rounded-2xl p-6 text-center">
-                    <div className="text-sm font-medium text-slate-400 mb-2">الكلمات</div>
+                    <div className="text-sm font-medium text-slate-400 mb-2">{l.words}</div>
                     <div className="text-3xl font-bold text-white font-mono">{transcriptText.split(/\s+/).filter(w => w.length > 0).length}</div>
                   </div>
                   <div className="border border-slate-800 bg-slate-900/30 rounded-2xl p-6 text-center">
-                    <div className="text-sm font-medium text-slate-400 mb-2">الدقة</div>
+                    <div className="text-sm font-medium text-slate-400 mb-2">{l.accuracy}</div>
                     <div className="text-3xl font-bold text-white font-mono">97%</div>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-center gap-4">
                   <button onClick={() => fileInputRef.current?.click()} className="px-6 py-2.5 rounded-full border border-slate-700 bg-slate-800/50 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-2 mt-4 sm:mt-0">
-                    <FileUp className="w-4 h-4" /> رفع ملف
+                    <FileUp className="w-4 h-4" /> {l.uploadBtn}
                   </button>
                   <input 
                     type="file" 
@@ -534,13 +649,13 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                     onClick={() => setActiveInputType('youtube')}
                     className="px-6 py-2.5 rounded-full border border-slate-700 bg-slate-800/50 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-2"
                   >
-                    <LinkIcon className="w-4 h-4" /> رابط يوتيوب
+                    <LinkIcon className="w-4 h-4" /> {l.youtubeTitle}
                   </button>
                   <button 
                     onClick={() => performAction('translate')}
                     className="px-6 py-2.5 rounded-full border border-slate-700 bg-slate-800/50 hover:bg-slate-800 text-slate-300 transition-colors flex items-center gap-2 mt-4 sm:mt-0"
                   >
-                    <Languages className="w-4 h-4" /> ترجمة
+                    <Languages className="w-4 h-4" /> {l.translateBtn}
                   </button>
                 </div>
               </>
@@ -549,14 +664,14 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
               <div className="grid grid-cols-3 gap-6">
                 <InputCard 
                   icon={<LinkIcon className="w-5 h-5 text-indigo-400" />}
-                  title="رابط يوتيوب"
-                  desc="الصق رابط الفيديو وسنقوم باستخراج النص لك."
+                  title={l.youtubeTitle}
+                  desc={l.youtubeDesc}
                   onClick={() => setActiveInputType('youtube')}
                 />
                 <InputCard 
                   icon={<FileUp className="w-5 h-5 text-amber-400" />}
-                  title="ارفع ملف 📁"
-                  desc="يدعم ملفات WAV, MP3, و MP4 حتى 500 ميجابايت."
+                  title={l.uploadTitle}
+                  desc={l.uploadDesc}
                   onClick={() => fileInputRef.current?.click()}
                 />
                 <input 
@@ -568,8 +683,8 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                 />
                 <InputCard 
                   icon={<Mic className="w-5 h-5 text-emerald-400" />}
-                  title="سجل مباشرة 🎤"
-                  desc="ابدأ تحويل صوتك إلى نص فوراً وبدقة عالية."
+                  title={l.micTitle}
+                  desc={l.micDesc}
                   onClick={toggleRecording}
                 />
               </div>
@@ -581,13 +696,13 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                 className="absolute top-6 left-6 flex items-center gap-2 bg-slate-800 hover:bg-slate-700 transition-colors text-slate-300 px-4 py-2 rounded-lg text-sm font-medium border border-slate-700/50"
                 onClick={() => navigator.clipboard.writeText(transcriptText)}
               >
-                نسخ النص
+                {l.copyText}
                 <Copy className="w-4 h-4" />
               </button>
               
               <div className="flex items-center gap-4 mb-6">
                 <div className="w-1.5 h-8 bg-blue-500 rounded-full" />
-                <h3 className="text-xl font-bold text-white">النص المستخرج</h3>
+                <h3 className="text-xl font-bold text-white">{l.extractedText}</h3>
               </div>
 
               <div className="text-slate-300 text-lg leading-relaxed space-y-6">
@@ -617,7 +732,7 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
                   if (e.key === 'Enter') handleChatSend();
                 }}
                 disabled={isProcessing}
-                placeholder="اطلب من الذكاء الاصطناعي تحسين النص أو تلخيصه ..."
+                placeholder={l.chatPlaceholder}
                 className="w-full h-14 bg-slate-900/50 border border-slate-800 focus:border-slate-600 rounded-xl px-6 text-slate-200 placeholder:text-slate-500 outline-none transition-all text-lg disabled:opacity-50"
               />
             </div>
@@ -626,7 +741,7 @@ ${outputModeInstructions[outputMode] || outputModeInstructions.A}
               disabled={isProcessing || !chatMessage.trim()}
               className="h-14 px-8 flex items-center justify-center gap-3 shrink-0 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-colors text-white font-medium text-lg shadow-lg shadow-blue-500/20"
             >
-              إرسال
+              {l.send}
               <Send className="w-5 h-5 rtl:-scale-x-100" />
             </button>
           </div>
@@ -670,7 +785,7 @@ function ActionButton({ icon, label, onClick }: { icon: React.ReactNode, label: 
 
 function InputCard({ icon, title, desc, onClick }: { icon: React.ReactNode, title: string, desc: string, onClick?: () => void }) {
   return (
-    <button onClick={onClick} className="text-right flex flex-col items-center p-6 rounded-2xl border border-slate-800/60 bg-gradient-to-b from-slate-900/30 to-transparent hover:border-slate-700 hover:bg-slate-900/50 transition-all duration-300 group">
+    <button onClick={onClick} className="text-start flex flex-col items-center p-6 rounded-2xl border border-slate-800/60 bg-gradient-to-b from-slate-900/30 to-transparent hover:border-slate-700 hover:bg-slate-900/50 transition-all duration-300 group">
       <div className="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
         {icon}
       </div>
